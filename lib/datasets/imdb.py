@@ -11,11 +11,15 @@ from __future__ import print_function
 import os
 import os.path as osp
 import PIL
-from model.utils.cython_bbox import bbox_overlaps
+#from model.utils.cython_bbox import bbox_overlaps
 import numpy as np
 import scipy.sparse
 from model.utils.config import cfg
 import pdb
+
+def bbox_overlaps(a, b):
+    overlap = np.zeros((a.shape[0]), dtype=np.float)
+    return overlap
 
 ROOT_DIR = osp.join(osp.dirname(__file__), '..', '..')
 
@@ -120,7 +124,7 @@ class imdb(object):
       oldx2 = boxes[:, 2].copy()
       boxes[:, 0] = widths[i] - oldx2 - 1
       boxes[:, 2] = widths[i] - oldx1 - 1
-      assert (boxes[:, 2] >= boxes[:, 0]).all()
+      assert (boxes[:, 2] >= boxes[:, 0]).all(), '{}, {}'.format(boxes[:, 0], boxes[:, 2])
       entry = {'boxes': boxes,
                'gt_overlaps': self.roidb[i]['gt_overlaps'],
                'gt_classes': self.roidb[i]['gt_classes'],
