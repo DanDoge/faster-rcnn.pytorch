@@ -168,7 +168,7 @@ def bbox_overlaps(anchors, gt_boxes):
 def bbox_overlaps_batch(anchors, gt_boxes):
     """
     anchors: (N, 4) ndarray of float
-    gt_boxes: (b, K, 5) ndarray of float
+    gt_boxes: (b, K, 6) ndarray of float
 
     overlaps: (N, K) ndarray of overlap between boxes and query_boxes
     """

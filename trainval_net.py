@@ -367,7 +367,7 @@ if __name__ == '__main__':
             'loss_rpn_cls': loss_rpn_cls,
             'loss_rpn_box': loss_rpn_box,
             'loss_rcnn_cls': loss_rcnn_cls,
-            'loss_rcnn_vp': loss_rcnn_vp
+            'loss_rcnn_vp': loss_rcnn_vp,
             'loss_rcnn_box': loss_rcnn_box
           }
           logger.add_scalars("logs_s_{}/losses".format(args.session), info, (epoch - 1) * iters_per_epoch + step)

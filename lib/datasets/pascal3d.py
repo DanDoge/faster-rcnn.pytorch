@@ -85,6 +85,7 @@ class pascal3d(imdb):
     return image_index
 
   def append_flipped_images(self):
+    return 
     num_images = self.num_images
     widths = self._get_widths()
     for i in range(num_images):

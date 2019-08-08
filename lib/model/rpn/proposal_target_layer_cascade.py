@@ -36,7 +36,11 @@ class _ProposalTargetLayer(nn.Module):
         self.BBOX_NORMALIZE_STDS = self.BBOX_NORMALIZE_STDS.type_as(gt_boxes)
         self.BBOX_INSIDE_WEIGHTS = self.BBOX_INSIDE_WEIGHTS.type_as(gt_boxes)
 
-        gt_boxes_append = gt_boxes.new(gt_boxes.size()).zero_()
+        all_rois_size = list(gt_boxes.size())
+        all_rois_size[-1] = 5
+        all_rois_size = torch.Size(all_rois_size)
+
+        gt_boxes_append = gt_boxes.new(all_rois_size).zero_()
         gt_boxes_append[:,:,1:5] = gt_boxes[:,:,:4]
 
         # Include ground-truth boxes in the set of candidate rois
@@ -205,7 +209,8 @@ class _ProposalTargetLayer(nn.Module):
             rois_batch[i] = all_rois[i][keep_inds]
             rois_batch[i,:,0] = i
 
-            gt_rois_batch[i] = gt_boxes[i][gt_assignment[i][keep_inds]]
+            #print(gt_rois_batch[i], gt_boxes[i][gt_assignment[i][keep_inds]])
+            gt_rois_batch[i] = gt_boxes[i][gt_assignment[i][keep_inds]][:, :5]
 
         bbox_target_data = self._compute_targets_pytorch(
                 rois_batch[:,:,1:5], gt_rois_batch[:,:,:4])
