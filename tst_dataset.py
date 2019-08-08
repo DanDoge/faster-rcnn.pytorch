@@ -59,7 +59,7 @@ class sampler(Sampler):
   def __len__(self):
     return self.num_data
 
-
+'''
 imdb, roidb, ratio_list, ratio_index = combined_roidb("pascal3d_1.0_train")
 
 train_size = len(roidb)
@@ -75,3 +75,19 @@ dataloader = torch.utils.data.DataLoader(dataset, batch_size=1,
 for i in dataloader:
     print(i)
     break;
+'''
+
+import pickle
+
+def tst():
+    cfg.EXP_DIR = 'vgg16'
+    save_name = 'faster_rcnn_10'
+    imdb, roidb, ratio_list, ratio_index = combined_roidb("pascal3d_1.0_val", False)
+    output_dir = get_output_dir(imdb, save_name)
+    det_file = os.path.join(output_dir, 'detections.pkl')
+    with open(det_file, 'rb') as f:
+        all_boxes = pickle.load(f)
+    imdb.evaluate_detections(all_boxes, output_dir)
+
+if __name__ == '__main__':
+    tst()

@@ -101,7 +101,8 @@ def voc_eval(detpath,
   # first load gt
   if not os.path.isdir(cachedir):
     os.mkdir(cachedir)
-  cachefile = os.path.join(cachedir, '%s_annots.pkl' % imagesetfile)
+  #cachefile = os.path.join(cachedir, '%s_annots.pkl' % imagesetfile)
+  cachefile = os.path.join(cachedir, 'annots_pascal3d.pkl')
   # read list of images
   with open(imagesetfile, 'r') as f:
     lines = f.readlines()
@@ -121,6 +122,7 @@ def voc_eval(detpath,
       pickle.dump(recs, f)
   else:
     # load
+    print('Loading cached annotations from {}'.format(cachefile))
     with open(cachefile, 'rb') as f:
       try:
         recs = pickle.load(f)
