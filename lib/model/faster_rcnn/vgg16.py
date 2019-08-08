@@ -51,12 +51,14 @@ class vgg16(_fasterRCNN):
     if self.class_agnostic:
       self.RCNN_bbox_pred = nn.Linear(4096, 4)
     else:
-      self.RCNN_bbox_pred = nn.Linear(4096, 4 * self.n_classes)      
+      self.RCNN_bbox_pred = nn.Linear(4096, 4 * self.n_classes)
+
+    # add viewpoint module
+    self.RCNN_view_pred = nn.Linear(4096, self.n_viewpoints)
 
   def _head_to_tail(self, pool5):
-    
+
     pool5_flat = pool5.view(pool5.size(0), -1)
     fc7 = self.RCNN_top(pool5_flat)
 
     return fc7
-

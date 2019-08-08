@@ -47,13 +47,13 @@ class _ProposalTargetLayer(nn.Module):
         fg_rois_per_image = int(np.round(cfg.TRAIN.FG_FRACTION * rois_per_image))
         fg_rois_per_image = 1 if fg_rois_per_image == 0 else fg_rois_per_image
 
-        labels, rois, bbox_targets, bbox_inside_weights = self._sample_rois_pytorch(
+        labels, viewpoints, rois, bbox_targets, bbox_inside_weights = self._sample_rois_pytorch(
             all_rois, gt_boxes, fg_rois_per_image,
             rois_per_image, self._num_classes)
 
         bbox_outside_weights = (bbox_inside_weights > 0).float()
 
-        return rois, labels, bbox_targets, bbox_inside_weights, bbox_outside_weights
+        return rois, labels, viewpoints, bbox_targets, bbox_inside_weights, bbox_outside_weights
 
     def backward(self, top, propagate_down, bottom):
         """This layer does not propagate gradients."""
@@ -131,8 +131,10 @@ class _ProposalTargetLayer(nn.Module):
         offset = offset.view(-1, 1).type_as(gt_assignment) + gt_assignment
 
         labels = gt_boxes[:,:,4].contiguous().view(-1).index((offset.view(-1),)).view(batch_size, -1)
-        
+        viewpoints = gt_boxes[:,:,5].contiguous().view(-1).index((offset.view(-1),)).view(batch_size, -1)
+
         labels_batch = labels.new(batch_size, rois_per_image).zero_()
+        viewpoints_batch = viewpoints.new(batch_size, rois_per_image).zero_()
         rois_batch  = all_rois.new(batch_size, rois_per_image, 5).zero_()
         gt_rois_batch = all_rois.new(batch_size, rois_per_image, 5).zero_()
         # Guard against the case when an image has fewer than max_fg_rois_per_image
@@ -193,10 +195,12 @@ class _ProposalTargetLayer(nn.Module):
 
             # Select sampled values from various arrays:
             labels_batch[i].copy_(labels[i][keep_inds])
+            viewpoints_batch[i].copy_(viewpoints[i][keep_inds])
 
             # Clamp labels for the background RoIs to 0
             if fg_rois_per_this_image < rois_per_image:
                 labels_batch[i][fg_rois_per_this_image:] = 0
+                viewpoints_batch[i][fg_rois_per_this_image:] = 0
 
             rois_batch[i] = all_rois[i][keep_inds]
             rois_batch[i,:,0] = i
@@ -209,4 +213,4 @@ class _ProposalTargetLayer(nn.Module):
         bbox_targets, bbox_inside_weights = \
                 self._get_bbox_regression_labels_pytorch(bbox_target_data, labels_batch, num_classes)
 
-        return labels_batch, rois_batch, bbox_targets, bbox_inside_weights
+        return labels_batch, viewpoints_batch, rois_batch, bbox_targets, bbox_inside_weights

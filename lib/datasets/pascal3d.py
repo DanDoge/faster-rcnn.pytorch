@@ -85,7 +85,22 @@ class pascal3d(imdb):
     return image_index
 
   def append_flipped_images(self):
-      return
+    num_images = self.num_images
+    widths = self._get_widths()
+    for i in range(num_images):
+      boxes = self.roidb[i]['boxes'].copy()
+      oldx1 = boxes[:, 0].copy()
+      oldx2 = boxes[:, 2].copy()
+      boxes[:, 0] = widths[i] - oldx2 - 1
+      boxes[:, 2] = widths[i] - oldx1 - 1
+      assert (boxes[:, 2] >= boxes[:, 0]).all(), '{}, {}'.format(boxes[:, 0], boxes[:, 2])
+      entry = {'boxes': boxes,
+               'gt_overlaps': self.roidb[i]['gt_overlaps'],
+               'gt_classes': self.roidb[i]['gt_classes'],
+               'flipped': True,
+               'gt_viewpoints': 25 - self.roidb[i]['gt_viewpoints']}
+      self.roidb.append(entry)
+    self._image_index = self._image_index * 2
 
   def _get_default_path(self):
     """
@@ -161,7 +176,8 @@ class pascal3d(imdb):
       cls = self._class_to_ind[obj['label'].lower().strip()]
       boxes[ix, :] = [x1, y1, x2, y2]
       gt_classes[ix] = cls
-      gt_viewpoints[ix] = obj['viewpoint']
+      # similar to class labels, we assign 0 to bg rois
+      gt_viewpoints[ix] = obj['viewpoint'] + 1
       overlaps[ix, cls] = 1.0
       seg_areas[ix] = (x2 - x1 + 1) * (y2 - y1 + 1)
 

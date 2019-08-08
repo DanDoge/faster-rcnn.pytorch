@@ -59,23 +59,26 @@ class sampler(Sampler):
   def __len__(self):
     return self.num_data
 
-'''
-imdb, roidb, ratio_list, ratio_index = combined_roidb("pascal3d_1.0_train")
+def tst_gt_box():
+    imdb, roidb, ratio_list, ratio_index = combined_roidb("pascal3d_1.0_train")
 
-train_size = len(roidb)
+    train_size = len(roidb)
 
-sampler_batch = sampler(train_size, 1)
+    sampler_batch = sampler(train_size, 1)
 
-dataset = roibatchLoader(roidb, ratio_list, ratio_index, 1, \
-                         imdb.num_classes, training=True)
+    dataset = roibatchLoader(roidb, ratio_list, ratio_index, 1, \
+                             imdb.num_classes, training=True)
 
-dataloader = torch.utils.data.DataLoader(dataset, batch_size=1,
-                          sampler=sampler_batch, num_workers=0)
+    dataloader = torch.utils.data.DataLoader(dataset, batch_size=1,
+                              sampler=sampler_batch, num_workers=0)
 
-for i in dataloader:
-    print(i)
-    break;
-'''
+    gt_boxes = torch.FloatTensor(1)
+    gt_boxes = Variable(gt_boxes)
+    for data in dataloader:
+        gt_boxes.data.resize_(data[2].size()).copy_(data[2])
+        print(gt_boxes)
+        #break;
+
 
 import pickle
 
@@ -90,4 +93,4 @@ def tst():
     imdb.evaluate_detections(all_boxes, output_dir)
 
 if __name__ == '__main__':
-    tst()
+    tst_gt_box()
