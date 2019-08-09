@@ -135,12 +135,14 @@ def voc_eval(detpath,
   for imagename in imagenames:
     R = [obj for obj in recs[imagename] if obj['name'] == classname]
     bbox = np.array([x['bbox'] for x in R])
+    viewpoint = np.array([x['viewpoint'] + 1 for x in R])
     difficult = np.array([x['difficult'] for x in R]).astype(np.bool)
     det = [False] * len(R)
     npos = npos + sum(~difficult)
     class_recs[imagename] = {'bbox': bbox,
                              'difficult': difficult,
-                             'det': det}
+                             'det': det,
+                             'viewpoint': viewpoint}
 
   # read dets
   detfile = detpath.format(classname)
@@ -150,7 +152,8 @@ def voc_eval(detpath,
   splitlines = [x.strip().split(' ') for x in lines]
   image_ids = [x[0] for x in splitlines]
   confidence = np.array([float(x[1]) for x in splitlines])
-  BB = np.array([[float(z) for z in x[2:]] for x in splitlines])
+  BB = np.array([[float(z) for z in x[2:-1]] for x in splitlines])
+  VP = np.array([int(float(x[-1])) for x in splitlines])
 
   nd = len(image_ids)
   tp = np.zeros(nd)
@@ -161,6 +164,7 @@ def voc_eval(detpath,
     sorted_ind = np.argsort(-confidence)
     sorted_scores = np.sort(-confidence)
     BB = BB[sorted_ind, :]
+    VP = VP[sorted_ind]
     image_ids = [image_ids[x] for x in sorted_ind]
 
     # go down dets and mark TPs and FPs
@@ -169,6 +173,7 @@ def voc_eval(detpath,
       bb = BB[d, :].astype(float)
       ovmax = -np.inf
       BBGT = R['bbox'].astype(float)
+      VPGT = R['viewpoint']
 
       if BBGT.size > 0:
         # compute overlaps
@@ -192,7 +197,7 @@ def voc_eval(detpath,
 
       if ovmax > ovthresh:
         if not R['difficult'][jmax]:
-          if not R['det'][jmax]:
+          if (not R['det'][jmax]) and vp == VPGT[0]:
             tp[d] = 1.
             R['det'][jmax] = 1
           else:

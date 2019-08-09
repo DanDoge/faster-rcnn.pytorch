@@ -238,12 +238,13 @@ if __name__ == '__main__':
       num_boxes.data.resize_(data[3].size()).copy_(data[3])
 
       det_tic = time.time()
-      rois, cls_prob, bbox_pred, \
+      rois, cls_prob, viewpoint_prob, bbox_pred, \
       rpn_loss_cls, rpn_loss_box, \
-      RCNN_loss_cls, RCNN_loss_bbox, \
+      RCNN_loss_cls, RCNN_loss_vp, RCNN_loss_bbox, \
       rois_label = fasterRCNN(im_data, im_info, gt_boxes, num_boxes)
 
       scores = cls_prob.data
+      viewpoints = viewpoint_prob.data
       boxes = rois.data[:, :, 1:5]
 
       if cfg.TEST.BBOX_REG:
@@ -270,6 +271,9 @@ if __name__ == '__main__':
       pred_boxes /= data[1][0][2].item()
 
       scores = scores.squeeze()
+      viewpoints = torch.max(viewpoints.squeeze(), -1)[0].data
+      print("viewpoints_pred are: ", viewpoints)
+      print("scores are: ", scores)
       pred_boxes = pred_boxes.squeeze()
       det_toc = time.time()
       detect_time = det_toc - det_tic
@@ -282,6 +286,8 @@ if __name__ == '__main__':
           # if there is det
           if inds.numel() > 0:
             cls_scores = scores[:,j][inds]
+            vp = viewpoints[inds]
+            print("cls_scores and vp are: ", cls_scores, vp)
             _, order = torch.sort(cls_scores, 0, True)
             if args.class_agnostic:
               cls_boxes = pred_boxes[inds, :]
@@ -291,7 +297,10 @@ if __name__ == '__main__':
             cls_dets = torch.cat((cls_boxes, cls_scores.unsqueeze(1)), 1)
             # cls_dets = torch.cat((cls_boxes, cls_scores), 1)
             cls_dets = cls_dets[order]
+            vp_dets = vp[order]
+            print("cls_dets and vp_dets are: ", cls_dets, vp_dets)
             keep = nms(cls_dets, cfg.TEST.NMS)
+            cls_dets = torch.cat((cls_dets, vp_dets.unsqueeze(1)), 1)
             cls_dets = cls_dets[keep.view(-1).long()]
             if vis:
               im2show = vis_detections(im2show, imdb.classes[j], cls_dets.cpu().numpy(), 0.3)

@@ -85,7 +85,7 @@ class pascal3d(imdb):
     return image_index
 
   def append_flipped_images(self):
-    return 
+    return
     num_images = self.num_images
     widths = self._get_widths()
     for i in range(num_images):
@@ -222,10 +222,11 @@ class pascal3d(imdb):
             continue
           # the VOCdevkit expects 1-based indices
           for k in range(dets.shape[0]):
-            f.write('{:s} {:.3f} {:.1f} {:.1f} {:.1f} {:.1f}\n'.
-                    format(index, dets[k, -1],
+            f.write('{:s} {:.3f} {:.1f} {:.1f} {:.1f} {:.1f} {:d}\n'.
+                    format(index, dets[k, -2],
                            dets[k, 0] + 1, dets[k, 1] + 1,
-                           dets[k, 2] + 1, dets[k, 3] + 1))
+                           dets[k, 2] + 1, dets[k, 3] + 1,
+                           dets[k, -1]))
 
   def _do_python_eval(self, output_dir='output'):
     annopath = os.path.join(
