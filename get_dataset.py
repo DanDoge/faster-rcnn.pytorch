@@ -25,6 +25,35 @@ def gen_objs():
     import pickle
     pickle.dump(objs, open("objs.pkl", "wb"))
 
+def gen_objs_imagenet(split):
+    objs = OrderedDict()
+    for label in os.listdir("./data/pascal3d+1.1/Annotations"):
+        if not label.endswith("imagenet"):
+            continue
+        with open("./data/pascal3d+1.1/Image_sets/" + label + "_" + split + ".txt") as f:
+            lines = f.readlines()
+            splitlines = [x.strip().split(' ') for x in lines]
+            image_ids = [x[0] for x in splitlines]
+        for img_path in image_ids:
+            img_path = img_path.split(".")[0]
+            anno_file = loadmat("./data/pascal3d+1.1/Annotations/" + label + "/" + img_path + ".mat")
+            for obj in anno_file["record"]["objects"][0][0][0]:
+                try:
+                    viewpoint = int(obj["viewpoint"]["azimuth"][0][0][0][0] // 15)
+                    bbox = obj["bbox"][0]
+                except:
+                    continue
+                if not img_path in objs:
+                    objs[img_path] = np.empty(0)
+                if split == "train":
+                    objs[img_path] = np.append(objs[img_path], {"label":label, "viewpoint":viewpoint, "bbox":bbox})
+                elif split == "val":
+                    objs[img_path] = np.append(objs[img_path], {"name":label, "viewpoint":viewpoint, "bbox":bbox})
+                    #objs[label] = np.append(objs[label], {"img_path":img_path.split(".")[0], "viewpoint":viewpoint, "bbox":bbox})
+
+    import pickle
+    pickle.dump(objs, open("objs_imagenet_" + split + ".pkl", "wb"))
+
 def gen_annots():
     objs = {}
     for label in os.listdir("./data/pascal3d+/Annotations"):
@@ -40,7 +69,7 @@ def gen_annots():
                 if img_path not in objs:
                     objs[img_path] = []
                 objs[img_path] = np.append(objs[img_path], {"name":label, "viewpoint":viewpoint, "bbox":bbox, "difficult":0})
-    pickle.dump(objs, open("annots_pascal.pkl", "wb"))
+    pickle.dump(objs, open("annots_pascal_imagenet_val.pkl", "wb"))
 
 def gen_imagesets():
     for label in os.listdir("./data/pascal3d+/Annotations"):
@@ -55,4 +84,5 @@ def gen_val():
                 f.write(img_path.split(".")[0] + '\n')
 
 if __name__ == '__main__':
-    gen_val()
+    gen_objs_imagenet("train")
+    gen_objs_imagenet("val")

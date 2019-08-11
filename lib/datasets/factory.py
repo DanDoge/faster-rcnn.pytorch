@@ -16,6 +16,7 @@ from datasets.pascal_voc import pascal_voc
 from datasets.imagenet import imagenet
 from datasets.vg import vg
 from datasets.pascal3d import pascal3d
+from datasets.pascal3dimagenet import pascal3dimagenet
 
 import numpy as np
 
@@ -23,6 +24,11 @@ for version in ["1.0", "1.1"]:
     for split in ['train', 'val']:
         name = "pascal3d_{}_{}".format(version, split)
         __sets[name] = (lambda split=split, version=version: pascal3d(version, split))
+
+for version in ["1.0", "1.1"]:
+    for split in ['train', 'val']:
+        name = "pascal3dimagenet_{}_{}".format(version, split)
+        __sets[name] = (lambda split=split, version=version: pascal3dimagenet(version, split))
 
 # Set up voc_<year>_<split>
 for year in ['2007', '2012']:

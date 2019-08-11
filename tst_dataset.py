@@ -60,7 +60,7 @@ class sampler(Sampler):
     return self.num_data
 
 def tst_gt_box():
-    imdb, roidb, ratio_list, ratio_index = combined_roidb("pascal3d_1.0_train")
+    imdb, roidb, ratio_list, ratio_index = combined_roidb("pascal3dimagenet_1.0_train")
 
     train_size = len(roidb)
 
@@ -74,10 +74,13 @@ def tst_gt_box():
 
     gt_boxes = torch.FloatTensor(1)
     gt_boxes = Variable(gt_boxes)
-    for data in dataloader:
-        gt_boxes.data.resize_(data[2].size()).copy_(data[2])
-        print(gt_boxes)
-        #break;
+    data_iter = iter(dataloader)
+    iters_per_epoch = int(len(roidb))
+    for step in range(iters_per_epoch):
+        try:
+            data = next(data_iter)
+        except ValueError:
+            pass
 
 
 import pickle
