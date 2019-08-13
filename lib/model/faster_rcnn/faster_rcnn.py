@@ -109,6 +109,7 @@ class _fasterRCNN(nn.Module):
 
         RCNN_loss_cls = 0
         RCNN_loss_bbox = 0
+        RCNN_loss_vp = 0
 
         if self.training:
             # classification loss

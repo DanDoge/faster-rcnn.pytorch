@@ -271,9 +271,9 @@ if __name__ == '__main__':
       pred_boxes /= data[1][0][2].item()
 
       scores = scores.squeeze()
-      viewpoints = torch.max(viewpoints.squeeze(), -1)[0].data
-      print("viewpoints_pred are: ", viewpoints)
-      print("scores are: ", scores)
+      viewpoints = torch.max(viewpoints.squeeze(), -1)[1].data
+      #print("viewpoints_pred are: ", viewpoints.size())
+      #print("scores are: ", scores.size())
       pred_boxes = pred_boxes.squeeze()
       det_toc = time.time()
       detect_time = det_toc - det_tic
@@ -287,7 +287,7 @@ if __name__ == '__main__':
           if inds.numel() > 0:
             cls_scores = scores[:,j][inds]
             vp = viewpoints[inds]
-            print("cls_scores and vp are: ", cls_scores, vp)
+            #print("cls_scores and vp are: ", cls_scores.size(), vp.size())
             _, order = torch.sort(cls_scores, 0, True)
             if args.class_agnostic:
               cls_boxes = pred_boxes[inds, :]
@@ -298,10 +298,11 @@ if __name__ == '__main__':
             # cls_dets = torch.cat((cls_boxes, cls_scores), 1)
             cls_dets = cls_dets[order]
             vp_dets = vp[order]
-            print("cls_dets and vp_dets are: ", cls_dets, vp_dets)
+            #print("cls_dets and vp_dets are: ", cls_dets.size(), vp_dets.size())
             keep = nms(cls_dets, cfg.TEST.NMS)
-            cls_dets = torch.cat((cls_dets, vp_dets.unsqueeze(1)), 1)
+            cls_dets = torch.cat((cls_dets, vp_dets.unsqueeze(1).float()), 1)
             cls_dets = cls_dets[keep.view(-1).long()]
+            #print("cls_dets are: ", cls_dets, cls_dets.size())
             if vis:
               im2show = vis_detections(im2show, imdb.classes[j], cls_dets.cpu().numpy(), 0.3)
             all_boxes[j][i] = cls_dets.cpu().numpy()
@@ -320,6 +321,8 @@ if __name__ == '__main__':
 
       misc_toc = time.time()
       nms_time = misc_toc - misc_tic
+
+      #exit(0)
 
       sys.stdout.write('im_detect: {:d}/{:d} {:.3f}s {:.3f}s   \r' \
           .format(i + 1, num_images, detect_time, nms_time))
