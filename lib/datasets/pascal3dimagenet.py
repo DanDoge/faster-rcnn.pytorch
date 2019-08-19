@@ -22,6 +22,7 @@ import uuid
 from .voc_eval import voc_eval
 from model.utils.config import cfg
 import pdb
+import PIL
 
 
 class pascal3dimagenet(imdb):
@@ -98,9 +99,6 @@ class pascal3dimagenet(imdb):
       oldx2 = boxes[:, 2].copy()
       boxes[:, 0] = widths[i] - oldx2 - 1
       boxes[:, 2] = widths[i] - oldx1 - 1
-      for box in boxes:
-          if box[2] < box[0]:
-              box[0] = 0
       assert (boxes[:, 2] >= boxes[:, 0]).all(), '{}, {}'.format(boxes[:, 0], boxes[:, 2])
       entry = {'boxes': boxes,
                'gt_overlaps': self.roidb[i]['gt_overlaps'],
@@ -168,6 +166,10 @@ class pascal3dimagenet(imdb):
     objs = self.objs[index]
     num_objs = len(objs)
 
+    imagesize = PIL.Image.open(self.image_path_from_index(index)).size
+    width = imagesize[0]
+    height = imagesize[1]
+
     boxes = np.zeros((num_objs, 4), dtype=np.uint16)
     gt_classes = np.zeros((num_objs), dtype=np.int32)
     overlaps = np.zeros((num_objs, self.num_classes), dtype=np.float32)
@@ -182,6 +184,22 @@ class pascal3dimagenet(imdb):
       y1 = obj['bbox'][1]
       x2 = obj['bbox'][2]
       y2 = obj['bbox'][3]
+      if x1 > x2:
+          t = x1
+          x1 = x2
+          x2 = t
+      if y1 > y2:
+          t = y1
+          y1 = y2
+          y2 = t
+      if x1 <= 0:
+          x1 = 1
+      if y1 <= 0:
+          y1 = 1
+      if x2 >= width:
+          x2 = width - 1
+      if y2 >= height:
+          y2 = height - 1
       if self._image_set == "train":
           cls = self._class_to_ind[obj['label'].lower().strip()]
       elif self._image_set == "val":

@@ -11,15 +11,11 @@ from __future__ import print_function
 import os
 import os.path as osp
 import PIL
-#from model.utils.cython_bbox import bbox_overlaps
+from model.utils.cython_bbox import bbox_overlaps
 import numpy as np
 import scipy.sparse
 from model.utils.config import cfg
 import pdb
-
-def bbox_overlaps(a, b):
-    overlap = np.zeros((a.shape[0]), dtype=np.float)
-    return overlap
 
 ROOT_DIR = osp.join(osp.dirname(__file__), '..', '..')
 
@@ -113,6 +109,10 @@ class imdb(object):
 
   def _get_widths(self):
     return [PIL.Image.open(self.image_path_at(i)).size[0]
+            for i in range(self.num_images)]
+
+  def _get_heights(self):
+    return [PIL.Image.open(self.image_path_at(i)).size[1]
             for i in range(self.num_images)]
 
   def append_flipped_images(self):

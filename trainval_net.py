@@ -321,6 +321,8 @@ if __name__ == '__main__':
       gt_boxes.data.resize_(data[2].size()).copy_(data[2])
       num_boxes.data.resize_(data[3].size()).copy_(data[3])
 
+      #print(im_info)
+
       fasterRCNN.zero_grad()
       rois, cls_prob, viewpoint_prob, bbox_pred, \
       rpn_loss_cls, rpn_loss_box, \

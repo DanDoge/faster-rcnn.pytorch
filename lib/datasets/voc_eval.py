@@ -167,10 +167,16 @@ def voc_eval(detpath,
     VP = VP[sorted_ind]
     image_ids = [image_ids[x] for x in sorted_ind]
 
-    # go down dets and mark TPs and FPs
+    # go down dets and mark TPs and FPs, according to pascal3d+1.1 dataset, if
+    # some cars detected in aeroplane dataset, it will not count as fp or tp
+    # only my interpretation
     for d in range(nd):
-      R = class_recs[image_ids[d]]
+      try:
+          R = class_recs[image_ids[d]]
+      except:
+          continue
       bb = BB[d, :].astype(float)
+      vp = VP[d]
       ovmax = -np.inf
       BBGT = R['bbox'].astype(float)
       VPGT = R['viewpoint']
