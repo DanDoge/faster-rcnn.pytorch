@@ -17,8 +17,15 @@ from datasets.imagenet import imagenet
 from datasets.vg import vg
 from datasets.pascal3d import pascal3d
 from datasets.pascal3dimagenet import pascal3dimagenet
+from datasets.real_images import real_image
 
 import numpy as np
+
+for version in ["1.0", "1.1"]:
+    for split in ['train', 'val']:
+        name = "real_image_{}_{}".format(version, split)
+        __sets[name] = (lambda split=split, version=version: real_image(version, split))
+
 
 for version in ["1.0", "1.1"]:
     for split in ['train', 'val']:

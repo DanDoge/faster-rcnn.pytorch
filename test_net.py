@@ -133,6 +133,10 @@ if __name__ == '__main__':
       args.imdb_name = "pascal3dimagenet_1.0_train"
       args.imdbval_name = "pascal3dimagenet_1.0_val"
       args.set_cfgs = ['ANCHOR_SCALES', '[8, 16, 32]', 'ANCHOR_RATIOS', '[0.5,1,2]', 'MAX_NUM_GT_BOXES', '20']
+  elif args.dataset == "real_image":
+      args.imdb_name = "real_image_1.0_train"
+      args.imdbval_name = "real_image_1.0_val"
+      args.set_cfgs = ['ANCHOR_SCALES', '[8, 16, 32]', 'ANCHOR_RATIOS', '[0.5,1,2]', 'MAX_NUM_GT_BOXES', '20']
 
 
   args.cfg_file = "cfgs/{}_ls.yml".format(args.net) if args.large_scale else "cfgs/{}.yml".format(args.net)
@@ -152,6 +156,8 @@ if __name__ == '__main__':
   print('{:d} roidb entries'.format(len(roidb)))
 
   input_dir = args.load_dir + "/" + args.net + "/" + args.dataset
+  if args.dataset == "real_image":
+      input_dir = args.load_dir + "/" + args.net + "/" + "pascal3dimagenet"
   if not os.path.exists(input_dir):
     raise Exception('There is no input directory for loading network from ' + input_dir)
   load_name = os.path.join(input_dir,

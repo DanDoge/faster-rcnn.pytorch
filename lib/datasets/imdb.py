@@ -11,7 +11,10 @@ from __future__ import print_function
 import os
 import os.path as osp
 import PIL
-from model.utils.cython_bbox import bbox_overlaps
+try:
+    from model.utils.cython_bbox import bbox_overlaps
+except:
+    pass
 import numpy as np
 import scipy.sparse
 from model.utils.config import cfg

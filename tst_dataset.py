@@ -60,7 +60,7 @@ class sampler(Sampler):
     return self.num_data
 
 def tst_gt_box():
-    imdb, roidb, ratio_list, ratio_index = combined_roidb("pascal3dimagenet_1.0_train")
+    imdb, roidb, ratio_list, ratio_index = combined_roidb("real_image_1.0_val")
 
     train_size = len(roidb)
 

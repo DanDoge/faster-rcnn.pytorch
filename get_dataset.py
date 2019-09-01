@@ -54,6 +54,16 @@ def gen_objs_imagenet(split):
     import pickle
     pickle.dump(objs, open("objs_imagenet_" + split + ".pkl", "wb"), protocol=2)
 
+def gen_real_images():
+    objs = OrderedDict()
+    for label in os.listdir("./data/real_image/"):
+        for img_path in os.listdir("./data/real_image/" + label):
+            objs[img_path] = np.empty(0)
+            objs[img_path] = np.append(objs[img_path], {"label":label, "viewpoint":0, "bbox":[1, 20, 1, 20]})
+
+    import pickle
+    pickle.dump(objs, open("objs_realimages.pkl", "wb"))
+
 def gen_annots_imagenet():
     objs = OrderedDict()
     for label in os.listdir("./data/pascal3d+1.1/Annotations"):
@@ -110,4 +120,4 @@ def gen_val():
                 f.write(img_path.split(".")[0] + '\n')
 
 if __name__ == '__main__':
-    gen_annots_imagenet()
+    gen_real_images()
