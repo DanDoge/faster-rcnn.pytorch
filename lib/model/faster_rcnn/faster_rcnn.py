@@ -26,10 +26,12 @@ class _fasterRCNN(nn.Module):
 
         # viewpoints
         self.n_viewpoints = 25
+        self.n_elevation = 13
         # loss
         self.RCNN_loss_cls = 0
         self.RCNN_loss_bbox = 0
         self.RCNN_loss_vp = 0
+        self.RCNN_loss_el = 0
 
         # define rpn
         self.RCNN_rpn = _RPN(self.dout_base_model)
@@ -56,16 +58,18 @@ class _fasterRCNN(nn.Module):
         # if it is training phase, then use ground truth bboxes for refining
         if self.training:
             roi_data = self.RCNN_proposal_target(rois, gt_boxes, num_boxes)
-            rois, rois_label, rois_viewpoint, rois_target, rois_inside_ws, rois_outside_ws = roi_data
+            rois, rois_label, rois_viewpoint, rois_elevation, rois_target, rois_inside_ws, rois_outside_ws = roi_data
 
             rois_label = Variable(rois_label.view(-1).long())
             rois_viewpoint = Variable(rois_viewpoint.view(-1).long())
+            rois_elevation = Variable(rois_elevation.view(-1).long())
             rois_target = Variable(rois_target.view(-1, rois_target.size(2)))
             rois_inside_ws = Variable(rois_inside_ws.view(-1, rois_inside_ws.size(2)))
             rois_outside_ws = Variable(rois_outside_ws.view(-1, rois_outside_ws.size(2)))
         else:
             rois_label = None
             rois_viewpoint = None
+            rois_elevation = None
             rois_target = None
             rois_inside_ws = None
             rois_outside_ws = None
@@ -107,9 +111,13 @@ class _fasterRCNN(nn.Module):
         viewponint_pred = self.RCNN_view_pred(pooled_feat)
         viewpoint_prob = F.softmax(viewponint_pred, 1)
 
+        elevation_pred = self.RCNN_el_pred(pooled_feat)
+        elevation_prob = F.softmax(elevation_pred, 1)
+
         RCNN_loss_cls = 0
         RCNN_loss_bbox = 0
         RCNN_loss_vp = 0
+        RCNN_loss_el = 0
 
         if self.training:
             # classification loss
@@ -118,15 +126,19 @@ class _fasterRCNN(nn.Module):
             # viewpoint prediction loss
             RCNN_loss_vp = F.cross_entropy(viewponint_pred, rois_viewpoint)
 
+            # elevation prediction loss
+            RCNN_loss_el = F.cross_entropy(elevation_pred, rois_elevation)
+
             # bounding box regression L1 loss
             RCNN_loss_bbox = _smooth_l1_loss(bbox_pred, rois_target, rois_inside_ws, rois_outside_ws)
 
 
         cls_prob = cls_prob.view(batch_size, rois.size(1), -1)
         viewpoint_prob = viewpoint_prob.view(batch_size, rois.size(1), -1)
+        elevation_prob = elevation_prob.view(batch_size, rois.size(1), -1)
         bbox_pred = bbox_pred.view(batch_size, rois.size(1), -1)
 
-        return rois, cls_prob, viewpoint_prob, bbox_pred, rpn_loss_cls, rpn_loss_bbox, RCNN_loss_cls, RCNN_loss_vp, RCNN_loss_bbox, rois_label
+        return rois, cls_prob, viewpoint_prob, elevation_prob, bbox_pred, rpn_loss_cls, rpn_loss_bbox, RCNN_loss_cls, RCNN_loss_vp, RCNN_loss_el, RCNN_loss_bbox, rois_label
 
     def _init_weights(self):
         def normal_init(m, mean, stddev, truncated=False):

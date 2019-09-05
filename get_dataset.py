@@ -14,16 +14,17 @@ def gen_objs():
             for obj in anno_file["record"]["objects"][0][0][0]:
                 try:
                     viewpoint = int(obj["viewpoint"]["azimuth"][0][0][0][0] // 15)
+                    elevation = int(obj["viewpoint"]["elevation"][0][0][0][0] // 15)
                     bbox = obj["bbox"][0]
                 except:
                     break
                 if not img_path in objs:
                     objs[img_path] = np.empty(0)
-                objs[img_path] = np.append(objs[img_path], {"label":label, "viewpoint":viewpoint, "bbox":bbox})
+                objs[img_path] = np.append(objs[img_path], {"label":label, "viewpoint":viewpoint, "elevation":elevation, "bbox":bbox})
                     #objs[label] = np.append(objs[label], {"img_path":img_path.split(".")[0], "viewpoint":viewpoint, "bbox":bbox})
 
     import pickle
-    pickle.dump(objs, open("objs.pkl", "wb"))
+    pickle.dump(objs, open("objs.pkl", "wb"), protocol=2)
 
 def gen_objs_imagenet(split):
     objs = OrderedDict()
@@ -40,13 +41,14 @@ def gen_objs_imagenet(split):
             for obj in anno_file["record"]["objects"][0][0][0]:
                 try:
                     viewpoint = int(obj["viewpoint"]["azimuth"][0][0][0][0] // 15)
+                    elevation = int((obj["viewpoint"]["elevation"][0][0][0][0] + 90) // 15)
                     bbox = obj["bbox"][0]
                 except:
                     continue
                 if not img_path in objs:
                     objs[img_path] = np.empty(0)
                 if split == "train":
-                    objs[img_path] = np.append(objs[img_path], {"label":label, "viewpoint":viewpoint, "bbox":bbox})
+                    objs[img_path] = np.append(objs[img_path], {"label":label, "viewpoint":viewpoint, "elevation":elevation, "bbox":bbox})
                 elif split == "val":
                     objs[img_path] = np.append(objs[img_path], {"name":label, "viewpoint":viewpoint, "bbox":bbox})
                     #objs[label] = np.append(objs[label], {"img_path":img_path.split(".")[0], "viewpoint":viewpoint, "bbox":bbox})
@@ -120,4 +122,4 @@ def gen_val():
                 f.write(img_path.split(".")[0] + '\n')
 
 if __name__ == '__main__':
-    gen_real_images()
+    gen_objs_imagenet("train")

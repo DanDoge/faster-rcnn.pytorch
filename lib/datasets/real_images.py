@@ -100,7 +100,8 @@ class real_image(imdb):
                'gt_overlaps': self.roidb[i]['gt_overlaps'],
                'gt_classes': self.roidb[i]['gt_classes'],
                'flipped': True,
-               'gt_viewpoints': 25 - self.roidb[i]['gt_viewpoints']}
+               'gt_viewpoints': 25 - self.roidb[i]['gt_viewpoints'],
+               'gt_elevation': self.roidb[i]['gt_elevation']}
       self.roidb.append(entry)
     self._image_index = self._image_index * 2
     return
@@ -172,6 +173,7 @@ class real_image(imdb):
     # "Seg" area for pascal is just the box area
     seg_areas = np.zeros((num_objs), dtype=np.float32)
     gt_viewpoints = np.zeros((num_objs), dtype=np.int32)
+    gt_elevation = np.zeros((num_objs), dtype=np.int32)
 
     # Load object bounding boxes into a data frame.
     for ix, obj in enumerate(objs):
@@ -201,6 +203,7 @@ class real_image(imdb):
       gt_classes[ix] = cls
       # similar to class labels, we assign 0 to bg rois
       gt_viewpoints[ix] = obj['viewpoint'] + 1
+      gt_elevation[ix] = obj['elevation'] + 1
       overlaps[ix, cls] = 1.0
       seg_areas[ix] = (x2 - x1 + 1) * (y2 - y1 + 1)
 
@@ -211,7 +214,8 @@ class real_image(imdb):
             'gt_overlaps': overlaps,
             'flipped': False,
             'seg_areas': seg_areas,
-            'gt_viewpoints':gt_viewpoints}
+            'gt_viewpoints':gt_viewpoints,
+            'gt_elevation': gt_elevation}
 
   def _get_comp_id(self):
     comp_id = (self._comp_id + '_' + self._salt if self.config['use_salt']
@@ -243,12 +247,13 @@ class real_image(imdb):
           if dets == []:
             continue
           # the VOCdevkit expects 1-based indices
+          # id conf x1 y1 x2 y2 az el
           for k in range(dets.shape[0]):
-            f.write('{:s} {:.3f} {:.1f} {:.1f} {:.1f} {:.1f} {:d}\n'.
-                    format(index, dets[k, -2],
+            f.write('{:s} {:.3f} {:.1f} {:.1f} {:.1f} {:.1f} {:d} {:d}\n'.
+                    format(index, dets[k, -3],
                            dets[k, 0] + 1, dets[k, 1] + 1,
                            dets[k, 2] + 1, dets[k, 3] + 1,
-                           int(dets[k, -1])))
+                           int(dets[k, -2]), int(dets[k, -1])))
 
   def _do_python_eval(self, output_dir='output'):
     annopath = os.path.join(

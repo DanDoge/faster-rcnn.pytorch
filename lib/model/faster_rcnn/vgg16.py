@@ -56,6 +56,9 @@ class vgg16(_fasterRCNN):
     # add viewpoint module
     self.RCNN_view_pred = nn.Linear(4096, self.n_viewpoints)
 
+    # add elevation module
+    self.RCNN_el_pred = nn.Linear(4096, self.n_elevation)
+
   def _head_to_tail(self, pool5):
 
     pool5_flat = pool5.view(pool5.size(0), -1)

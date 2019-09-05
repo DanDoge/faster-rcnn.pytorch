@@ -104,7 +104,8 @@ class pascal3dimagenet(imdb):
                'gt_overlaps': self.roidb[i]['gt_overlaps'],
                'gt_classes': self.roidb[i]['gt_classes'],
                'flipped': True,
-               'gt_viewpoints': 25 - self.roidb[i]['gt_viewpoints']}
+               'gt_viewpoints': 25 - self.roidb[i]['gt_viewpoints'],
+               'gt_elevation': self.roidb[i]['gt_elevation']}
       self.roidb.append(entry)
     self._image_index = self._image_index * 2
     return
@@ -176,6 +177,7 @@ class pascal3dimagenet(imdb):
     # "Seg" area for pascal is just the box area
     seg_areas = np.zeros((num_objs), dtype=np.float32)
     gt_viewpoints = np.zeros((num_objs), dtype=np.int32)
+    gt_elevation = np.zeros((num_objs), dtype=np.int32)
 
     # Load object bounding boxes into a data frame.
     for ix, obj in enumerate(objs):
@@ -208,6 +210,7 @@ class pascal3dimagenet(imdb):
       gt_classes[ix] = cls
       # similar to class labels, we assign 0 to bg rois
       gt_viewpoints[ix] = obj['viewpoint'] + 1
+      gt_elevation[ix] = obj['elevation'] + 1
       overlaps[ix, cls] = 1.0
       seg_areas[ix] = (x2 - x1 + 1) * (y2 - y1 + 1)
 
@@ -218,7 +221,8 @@ class pascal3dimagenet(imdb):
             'gt_overlaps': overlaps,
             'flipped': False,
             'seg_areas': seg_areas,
-            'gt_viewpoints':gt_viewpoints}
+            'gt_viewpoints':gt_viewpoints,
+            'gt_elevation': gt_elevation}
 
   def _get_comp_id(self):
     comp_id = (self._comp_id + '_' + self._salt if self.config['use_salt']

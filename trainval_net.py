@@ -324,13 +324,13 @@ if __name__ == '__main__':
       #print(im_info)
 
       fasterRCNN.zero_grad()
-      rois, cls_prob, viewpoint_prob, bbox_pred, \
+      rois, cls_prob, viewpoint_prob, el_prob, bbox_pred, \
       rpn_loss_cls, rpn_loss_box, \
-      RCNN_loss_cls, RCNN_loss_vp, RCNN_loss_bbox, \
+      RCNN_loss_cls, RCNN_loss_vp, RCNN_loss_el, RCNN_loss_bbox, \
       rois_label = fasterRCNN(im_data, im_info, gt_boxes, num_boxes)
 
       loss = rpn_loss_cls.mean() + rpn_loss_box.mean() \
-           + RCNN_loss_cls.mean() + RCNN_loss_vp.mean() + RCNN_loss_bbox.mean()
+           + RCNN_loss_cls.mean() + RCNN_loss_vp.mean() + RCNN_loss_el.mean() + RCNN_loss_bbox.mean()
       loss_temp += loss.item()
 
       # backward
@@ -350,6 +350,7 @@ if __name__ == '__main__':
           loss_rpn_box = rpn_loss_box.mean().item()
           loss_rcnn_cls = RCNN_loss_cls.mean().item()
           loss_rcnn_vp = RCNN_loss_vp.mean().item()
+          loss_rcnn_el = RCNN_loss_el.mean().item()
           loss_rcnn_box = RCNN_loss_bbox.mean().item()
           fg_cnt = torch.sum(rois_label.data.ne(0))
           bg_cnt = rois_label.data.numel() - fg_cnt
@@ -358,6 +359,7 @@ if __name__ == '__main__':
           loss_rpn_box = rpn_loss_box.item()
           loss_rcnn_cls = RCNN_loss_cls.item()
           loss_rcnn_vp = RCNN_loss_vp.item()
+          loss_rcnn_el = RCNN_loss_el.item()
           loss_rcnn_box = RCNN_loss_bbox.item()
           fg_cnt = torch.sum(rois_label.data.ne(0))
           bg_cnt = rois_label.data.numel() - fg_cnt
@@ -365,8 +367,8 @@ if __name__ == '__main__':
         print("[session %d][epoch %2d][iter %4d/%4d] loss: %.4f, lr: %.2e" \
                                 % (args.session, epoch, step, iters_per_epoch, loss_temp, lr))
         print("\t\t\tfg/bg=(%d/%d), time cost: %f" % (fg_cnt, bg_cnt, end-start))
-        print("\t\t\trpn_cls: %.4f, rpn_box: %.4f, rcnn_cls: %.4f, rcnn_vp: %.4f, rcnn_box %.4f" \
-                      % (loss_rpn_cls, loss_rpn_box, loss_rcnn_cls, loss_rcnn_vp, loss_rcnn_box))
+        print("\t\t\trpn_cls: %.4f, rpn_box: %.4f, rcnn_cls: %.4f, rcnn_vp: %.4f, rcnn_el: %.4f, rcnn_box %.4f" \
+                      % (loss_rpn_cls, loss_rpn_box, loss_rcnn_cls, loss_rcnn_vp, loss_rcnn_el, loss_rcnn_box))
         if args.use_tfboard:
           info = {
             'loss': loss_temp,
@@ -374,6 +376,7 @@ if __name__ == '__main__':
             'loss_rpn_box': loss_rpn_box,
             'loss_rcnn_cls': loss_rcnn_cls,
             'loss_rcnn_vp': loss_rcnn_vp,
+            'loss_rcnn_el': loss_rcnn_el,
             'loss_rcnn_box': loss_rcnn_box
           }
           logger.add_scalars("logs_s_{}/losses".format(args.session), info, (epoch - 1) * iters_per_epoch + step)
