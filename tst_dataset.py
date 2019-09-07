@@ -88,7 +88,7 @@ import pickle
 def tst():
     cfg.EXP_DIR = 'vgg16'
     save_name = 'faster_rcnn_10'
-    imdb, roidb, ratio_list, ratio_index = combined_roidb("pascal3d_1.0_val", False)
+    imdb, roidb, ratio_list, ratio_index = combined_roidb("pascal3dimagenet_1.0_val", False)
     output_dir = get_output_dir(imdb, save_name)
     det_file = os.path.join(output_dir, 'detections.pkl')
     with open(det_file, 'rb') as f:
@@ -96,4 +96,4 @@ def tst():
     imdb.evaluate_detections(all_boxes, output_dir)
 
 if __name__ == '__main__':
-    tst_gt_box()
+    tst()

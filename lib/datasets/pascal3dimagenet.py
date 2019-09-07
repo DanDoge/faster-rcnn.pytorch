@@ -255,11 +255,11 @@ class pascal3dimagenet(imdb):
             continue
           # the VOCdevkit expects 1-based indices
           for k in range(dets.shape[0]):
-            f.write('{:s} {:.3f} {:.1f} {:.1f} {:.1f} {:.1f} {:d}\n'.
-                    format(index, dets[k, -2],
+            f.write('{:s} {:.3f} {:.1f} {:.1f} {:.1f} {:.1f} {:d} {:d}\n'.
+                    format(index, dets[k, -3],
                            dets[k, 0] + 1, dets[k, 1] + 1,
                            dets[k, 2] + 1, dets[k, 3] + 1,
-                           int(dets[k, -1])))
+                           int(dets[k, -2]), int(dets[k, -1])))
 
   def _do_python_eval(self, output_dir='output'):
     annopath = os.path.join(

@@ -329,6 +329,8 @@ if __name__ == '__main__':
       RCNN_loss_cls, RCNN_loss_vp, RCNN_loss_el, RCNN_loss_bbox, \
       rois_label = fasterRCNN(im_data, im_info, gt_boxes, num_boxes)
 
+      RCNN_loss_el = Variable(torch.Tensor([0]).type_as(RCNN_loss_el.data))
+
       loss = rpn_loss_cls.mean() + rpn_loss_box.mean() \
            + RCNN_loss_cls.mean() + RCNN_loss_vp.mean() + RCNN_loss_el.mean() + RCNN_loss_bbox.mean()
       loss_temp += loss.item()
